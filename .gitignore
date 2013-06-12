@@ -1,3 +1,5 @@
 # Card Codes
 card_codes.xlsx
 
+# .pyc files
+*.pyc
