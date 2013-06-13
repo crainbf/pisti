@@ -1,92 +1,127 @@
 import random
 from deck import Card_Deck
 # from arbitrate import arbitrate
-
 # Create a card array
-deck = range(52)
-# Shuffle cards
-random.shuffle(deck)
+def setup():
+    deck = range(52)
+    # Shuffle cards
+    random.shuffle(deck)
+
+    # Draw player1's hand and remove it from the deck
+    player1_hand = random.sample(deck, 4)
+    deck = [x for x in deck if x not in player1_hand]
+
+    # Draw player2's hand and remove it from the deck
+    player2_hand = random.sample(deck, 4)
+    deck = [x for x in deck if x not in player2_hand]
+
+    # Draw the discard_pile and remove it from the deck
+    discard_pile = random.sample(deck, 4)
+    deck = [x for x in deck if x not in discard_pile]
+
+    # Create empty piles for the players
+    player1_pile = []
+    player2_pile = []
+
+    return(deck, player1_hand, player2_hand, discard_pile, player1_pile, player2_pile)
 
 
-# Note: We will need to make sure that cards are not drawn with replacement
-# Create random player hands of four cards each
-player1_hand = random.sample(deck, 4)
-
-# Remove player1_hand from deck
-deck = [x for x in deck if x not in player1_hand]
-
-# Draw player2_hand
-player2_hand = random.sample(deck, 4)
-
-# Remove player2_hand from deck
-deck = [x for x in deck if x not in player2_hand]
-
-# Create a discard pile 
-discard_pile = random.sample(deck, 4)
-
-# Remove discard pile from deck
-deck = [x for x in deck if x not in discard_pile]
-
-# Creating empty piles for the players
-player1_pile = []
-player2_pile = []
-
-
-def arbitrate(player1_card, player2_card, discard_pile):
-    # This function chooses the winning hand
-    # if the value of player2_card is equal to that of player 1-> he wins
-    # else 'The pile is getting higher'
-    player1_cvalue = Card_Deck[player1_card]['value']
-    player2_cvalue = Card_Deck[player2_card]['value']
-
-    # player2's card has the same value as player 1's card
-    if player1_cvalue == player2_cvalue:
-        result = "Player 2 wins the hand by pairing"
-        player2_pile.extend([player1_card, player2_card])
-        discard_pile = []
-
-    # player2 plays a jack
-    elif player2_cvalue == 'J':
-        result = "Player 2 wins the hand by playing a Jack"
-        player2_pile.extend([player1_card, player2_card])
-        discard_pile = []
-
+def arbitrate(player, discard_pile, player1_hand, player2_hand, player1_pile, player2_pile):
+    if player == 1:
+        player_card = player1_hand.pop()
     else:
-        result = "Next round"
-        # THIS IS WRONG. JUST TO TEST. CORRECT!
-        discard_pile.extend([player1_card, player2_card])
+        player_card = player2_hand.pop()
 
-    return result, discard_pile
+    try:
+        top_card_value = Card_Deck[discard_pile[-1]]['value']
+    # In case the discard pile is empty, the card is simply added to the pile
+    except IndexError:
+        result = 0
+        discard_pile.extend([player_card])
+        return result, player_card, discard_pile
 
-# Player 1 begins the game
-# 1. player 1 appends a card to the discard pile
-# 2. function arbitrate checks
-#    - if the last two cards on the discard pile are identical
-#    - or if the last card on the discard pile is a 'J'
-#  if TRUE:
-#      - the discard pile is appended to p1_pile
-#      - the discard pile is emptied
-#      - it returns to 1.
-# if FALSE:
-#      - player2 appends a card to the discount pile
-#
-#
-# necessary functions:
-#    check if last two are identical
+    # The player pairs with the top card of the pile and takes pile
+    if Card_Deck[player_card]['value'] == top_card_value:
+        result = 1
+        discard_pile.extend([player_card])
+        # Cards get added to player1's pile
+        if player == 1:
+            player1_pile.extend(discard_pile)
+        # Or to player2's pile
+        else:
+            player2_pile.extend(discard_pile)
+        discard_pile = []
+    # The player plays a jack and the discard pile is not empty the player takes the pile
+    if Card_Deck[player_card]['value'] == "J" and not discard_pile:
+        result = 1
+        discard_pile.extend([player_card])
+        # Cards get added to player1's pile
+        if player == 1:
+            player1_pile.extend(discard_pile)
+        # Or to player2's pile
+        else:
+            player2_pile.extend(discard_pile)
+        discard_pile = []
+    # The player doesn't take the pile and the round continues
+    else:
+        result = 0
+        discard_pile.extend([player_card])
+    return result, player_card, discard_pile
+
+def deal(player1_hand, player2_hand, deck):
+    # Draw four cards for player1's hand and remove them from the deck
+    player1_hand = random.sample(deck, 4)
+    deck = [x for x in deck if x not in player1_hand]
+
+    # Draw four cards for player2's hand and remove them from the deck
+    player2_hand = random.sample(deck, 4)
+    deck = [x for x in deck if x not in player2_hand]
+
+    return player1_hand, player2_hand, deck
+
+def score(player1_pile, player2_pile):
+    # Here I will need to do the scoring algorithm
+    player1_score = player2_score = 99
+
+    return player1_score, player2_score
+
+def game():
+    # Set up game with initial variables
+    deck, player1_hand, player2_hand, discard_pile, player1_pile, player2_pile = setup()
+
+    for i in range(26):
+        # Player 1's turn
+        print("Turn: "+str(2*i+1))
+        try:
+            r, p, d = arbitrate(1, discard_pile, player1_hand, player2_hand, player1_pile, player2_pile)
+        except IndexError:  # The player's hands have run out of cards and .pop returns and IndexError
+            try:
+                player1_hand, player2_hand, deck = deal(player1_hand, player2_hand, deck)
+                r, p, d = arbitrate(1, discard_pile, player1_hand, player2_hand, player1_pile, player2_pile)
+            except ValueError:  # The deck has run out of cards and dealing returns a ValueError
+                player1_score, player2_score = score(player1_pile, player2_pile)
+        print("Player 1 plays "+Card_Deck[p]['value']+" of "+Card_Deck[p]['suit'])
+        # Player 2's turn
+        print("Turn: "+str(2*i+2))
+        try:
+            r, p, d = arbitrate(2, discard_pile, player1_hand, player2_hand, player1_pile, player2_pile)
+        except IndexError:  # The player's hands have run out of cards and .pop returns and IndexError
+            try:
+                player1_hand, player2_hand, deck = deal(player1_hand, player2_hand, deck)
+                r, p, d = arbitrate(2, discard_pile, player1_hand, player2_hand, player1_pile, player2_pile)
+            except ValueError:  # The deck has run out of cards and dealing returns a ValueError
+                player1_score, player2_score = score(player1_pile, player2_pile)
+        print("Player 1 plays "+Card_Deck[p]['value']+" of "+Card_Deck[p]['suit'])
+    return deck, player1_hand, player2_hand, discard_pile, player1_pile, player2_pile
 
 
-for i in range(4):
-    result, discard_pile = arbitrate(player1_hand[i], player2_hand[i], discard_pile)
-    print(result, discard_pile)
+# This is a test functions that checks for the length
+def lengthy(deck, player1_hand, player2_hand, discard_pile, player1_pile, player2_pile):
+    print("Deck length: "+str(len(deck)))
+    print("P1 Hand: "+str(len(player1_hand)))
+    print("P2 Hand: "+str(len(player2_hand)))
+    print("Discard Pile: "+str(len(discard_pile)))
+    print("P1 Pile: "+str(len(player1_pile)))
+    print("P2 Pile: "+str(len(player2_pile)))
+    print("Total cards: "+str(len(deck)+len(player1_hand)+len(player2_hand)+len(discard_pile)+len(player1_pile)+len(player2_pile)))
 
-# game
-# first cards for each player is saved in variable
-# cards are passed to arbitration function
-# arbitration function returns outcome (e.g. string 'the winner is 1 or 2')
-
-
-# print(player1_hand, player2_hand, discard_pile)
-
-# for i in range(4):
-#     print("Hand: %s" %i)
-#     print("Player 1's play: %s of %s" % (Card_Deck[player1_hand[i]]['value'], Card_Deck[player1_hand[i]]['suit']))
