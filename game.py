@@ -17,6 +17,8 @@ def setup():
 
     # Draw the discard_pile and remove it from the deck
     discard_pile = random.sample(deck, 4)
+    while Card_Deck[discard_pile[-1]]['value'] == 'J':
+        discard_pile = random.sample(deck, 4)
     deck = [x for x in deck if x not in discard_pile]
 
     # Create empty piles for the players
