@@ -99,7 +99,8 @@ def deal(player1_hand, player2_hand, deck):
 
 def score(player1_pile, player2_pile, player1_pisti, player2_pisti):
     # Here I will need to do the scoring algorithm
-    player1_scores = player2_scores = []
+    player1_scores = []
+    player2_scores = []
 
     # Add one point for each Ace and Jack
     player1_scores.extend([1 for i in player1_pile if (Card_Deck[i]['value'] == "J" or Card_Deck[i]['value'] == "A")])
