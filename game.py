@@ -249,8 +249,10 @@ def game():
     discard_pile = []  # Empty discard pile for completion
     p1_score, p2_score = score(p1_pile, p2_pile, p1_pisti, p2_pisti)
 
+    print("The game is over!")
     print("Player 1 scored: "+str(p1_score))
     print("Player 2 scored: "+str(p2_score))
+    print("Player " + ("1" if p1_score > p2_score else "2") + " won the game.")
     return deck, p1_hand, p2_hand, discard_pile, p1_pile, p2_pile, p1_pisti, p2_pisti
 
 game()
