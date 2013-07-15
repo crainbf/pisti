@@ -253,6 +253,7 @@ def game():
     print("Player 2 scored: "+str(p2_score))
     return deck, p1_hand, p2_hand, discard_pile, p1_pile, p2_pile, p1_pisti, p2_pisti
 
+game()
 
 if __name__ == "__main__":
     import doctest
