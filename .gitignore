@@ -3,3 +3,9 @@ card_codes.xlsx
 
 # .pyc files
 *.pyc
+
+# .idea files
+*.idea
+
+# ds store
+.DS_Store

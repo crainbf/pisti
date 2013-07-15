@@ -1,19 +1,32 @@
 import random
 from deck import Card_Deck
-# from arbitrate import arbitrate
-# Create a card array
-def setup():
+
+
+def deal_initial():
+    # Sets up the game by shuffling cards and doing initial deal
+    # RETURNS: Players' hands, deck, discard pile, players' piles
+
+    """
+    >>> deck, p1_hand, p2_hand, discard_pile, p1_pile, p2_pile = deal_initial()
+    >>> len(deck)
+    40
+    >>> len(p1_hand) == len(p2_hand) == 4
+    True
+    >>> Card_Deck[discard_pile[-1]]['value'] != 'J'
+    True
+    """
+
     deck = range(52)
     # Shuffle cards
     random.shuffle(deck)
 
     # Draw player1's hand and remove it from the deck
-    player1_hand = random.sample(deck, 4)
-    deck = [x for x in deck if x not in player1_hand]
+    p1_hand = random.sample(deck, 4)
+    deck = [x for x in deck if x not in p1_hand]
 
     # Draw player2's hand and remove it from the deck
-    player2_hand = random.sample(deck, 4)
-    deck = [x for x in deck if x not in player2_hand]
+    p2_hand = random.sample(deck, 4)
+    deck = [x for x in deck if x not in p2_hand]
 
     # Draw the discard_pile and remove it from the deck
     discard_pile = random.sample(deck, 4)
@@ -22,175 +35,225 @@ def setup():
     deck = [x for x in deck if x not in discard_pile]
 
     # Create empty piles for the players
-    player1_pile = []
-    player2_pile = []
+    p1_pile = []
+    p2_pile = []
 
-    return(deck, player1_hand, player2_hand, discard_pile, player1_pile, player2_pile)
+    return deck, p1_hand, p2_hand, discard_pile, p1_pile, p2_pile
 
 
-def arbitrate(player, discard_pile, player1_hand, player2_hand, player1_pile, player2_pile, player1_pisti, player2_pisti, last_capture):
+def choose_card(p2_hand):
+    # Shows cards in player's hand and allows selection of playing card.
+    # RETURNS: Card played, Player's hand
+
+    print("You have the following cards:")
+    for i in range(len(p2_hand)):
+        print("Card " + str(i+1) + ': ' + Card_Deck[p2_hand[i]]['value'] + ' of ' + Card_Deck[p2_hand[i]]['suit'] + '.')
+    card_choice = 0
+    while int(card_choice) not in range(1, len(p2_hand) + 1):
+        card_choice = raw_input('Choose the Card Number: ')
+    p_card = p2_hand.pop(int(card_choice)-1)
+
+    return p_card, p2_hand
+
+
+def play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_pisti, last_capture):
+    # Chooses card to be played automatically (computer) or through choose_card
+    # Evaluates if capture occurred. Adjusts new discard pile, player piles,
+    # player hands, pisti count and last capture code.
+    # RETURNS:   result (0 - empty pile, card starts new discard pile;
+    #                    1 - player captures pile;
+    #                    2 - player adds card to top of existing pile)
+    #            card played, discard pile, pisti count and last capture code
+
     if player == 1:
-        player_card = player1_hand.pop()
+        p_card = p1_hand.pop()  # Computer turn: last card played (~random play)
     else:
-        player_card = player2_hand.pop()
+        p_card, p2_hand = choose_card(p2_hand)
 
     try:
         top_card_value = Card_Deck[discard_pile[-1]]['value']
-    # In case the discard pile is empty, the card is simply added to the pile
-    except IndexError:
+    except IndexError:  # If discard pile is empty, card is simply added to pile
         result = 0
-        discard_pile.extend([player_card])
-        return result, player_card, discard_pile, player1_pisti, player2_pisti, last_capture
+        discard_pile.extend([p_card])
+        return result, p_card, discard_pile, p1_pisti, p2_pisti, last_capture
 
+    # If the discard pile is not empty, it is checked if a capture occurred.
     # The player pairs with the top card of the pile and takes pile
-    if Card_Deck[player_card]['value'] == top_card_value:
+    if Card_Deck[p_card]['value'] == top_card_value:
         result = 1
-        discard_pile.extend([player_card])
+        discard_pile.extend([p_card])
         # Cards get added to player1's pile
         if player == 1:
-            player1_pile.extend(discard_pile)
+            p1_pile.extend(discard_pile)
             last_capture = 1
             # Check for Double Pisti
             if len(discard_pile) == 2 and Card_Deck[discard_pile[-1]]['value'] == "J":
-                player1_pisti += 2
+                p1_pisti += 2
             # Check for Pisti
             elif len(discard_pile) == 2:
-                player1_pisti += 1
+                p1_pisti += 1
         # Or to player2's pile
         else:
-            player2_pile.extend(discard_pile)
+            p2_pile.extend(discard_pile)
             last_capture = 2
             # Check for Pisti
             if len(discard_pile) == 2 and Card_Deck[discard_pile[-1]]['value'] == "J":
-                player2_pisti += 2
+                p2_pisti += 2
             # Check for Pisti
             elif len(discard_pile) == 2:
-                player2_pisti += 1
+                p2_pisti += 1
         discard_pile = []
-    # The player plays a jack and the discard pile is not empty the player takes the pile
-    elif Card_Deck[player_card]['value'] == "J" and discard_pile:
+
+    # Player plays a jack and  discard pile is not empty -> pile is captured
+    elif Card_Deck[p_card]['value'] == "J" and discard_pile:
         result = 1
-        discard_pile.extend([player_card])
+        discard_pile.extend([p_card])
         # Cards get added to player1's pile
         if player == 1:
-            player1_pile.extend(discard_pile)
+            p1_pile.extend(discard_pile)
             last_capture = 1
         # Or to player2's pile
         else:
-            player2_pile.extend(discard_pile)
+            p2_pile.extend(discard_pile)
             last_capture = 2
         discard_pile = []
+
     # The player doesn't take the pile and the round continues
     else:
         result = 0
-        discard_pile.extend([player_card])
-    return result, player_card, discard_pile, player1_pisti, player2_pisti, last_capture
+        discard_pile.extend([p_card])
+    return result, p_card, discard_pile, p1_pisti, p2_pisti, last_capture
 
 
-def deal(player1_hand, player2_hand, deck):
-    # Draw four cards for player1's hand and remove them from the deck
-    player1_hand = random.sample(deck, 4)
-    deck = [x for x in deck if x not in player1_hand]
+def deal_more(p1_hand, p2_hand, deck):
+    # Draws four cards for each players' hand and removes them from the deck
+    # Returns new player hands' and new reduced deck
+    """
+    >>> p1 = p2 = []
+    >>> d = range(40)
+    >>> random.shuffle(d)
+    >>> p1, p2, d = deal_more(p1, p2, d)
+    >>> len(p1) == len(p2) == 4
+    True
+    >>> len(d)
+    32
+    >>> set(p1) != set(p2)
+    True
+    """
+    p1_hand = random.sample(deck, 4)
+    deck = [x for x in deck if x not in p1_hand]
 
     # Draw four cards for player2's hand and remove them from the deck
-    player2_hand = random.sample(deck, 4)
-    deck = [x for x in deck if x not in player2_hand]
+    p2_hand = random.sample(deck, 4)
+    deck = [x for x in deck if x not in p2_hand]
 
-    return player1_hand, player2_hand, deck
+    return p1_hand, p2_hand, deck
 
 
-def score(player1_pile, player2_pile, player1_pisti, player2_pisti):
-    # Here I will need to do the scoring algorithm
-    player1_scores = []
-    player2_scores = []
+def score(p1_pile, p2_pile, p1_pisti, p2_pisti):
+    # Scores the hand at the end of the game
+    # RETURNS: Players' scores
+
+    """
+    >>> p1_pile = [4, 23, 18, 21, 6, 2, 34, 31, 5, 10, 35, 32, 9, 27, 19, 16, 3, 22, 45, 46, 13, 43]
+    >>> p2_pile = [17, 40, 15, 36, 38, 49, 11, 41, 39, 48, 42, 47, 50, 12, 7, 29, 44, 51, 0, 1, 8, 14, 20, 24, 25, 26, 28, 30, 33, 37]
+    >>> p1_pisti = 2
+    >>> p2_pisti = 1
+    >>> score(p1_pile, p2_pile, p1_pisti, p2_pisti)
+    (28, 18)
+    >>> p1_pile = []
+    >>> p2_pile = range(52)
+    >>> p1_pisti = p2_pisti = 0
+    >>> score(p1_pile, p2_pile, p1_pisti, p2_pisti)
+    (0, 16)
+    >>> p1_pile = random.sample(range(52), 26)
+    >>> p2_pile = [x for x in range(52) if x not in p1_pile]
+    >>> p1_pisti = p2_pisti = 0
+    >>> sum(score(p1_pile, p2_pile, p1_pisti, p2_pisti))
+    13
+    """
+    p1_scores = []
+    p2_scores = []
 
     # Add one point for each Ace and Jack
-    player1_scores.extend([1 for i in player1_pile if (Card_Deck[i]['value'] == "J" or Card_Deck[i]['value'] == "A")])
-    player2_scores.extend([1 for i in player2_pile if (Card_Deck[i]['value'] == "J" or Card_Deck[i]['value'] == "A")])
+    p1_scores.extend([1 for i in p1_pile if (Card_Deck[i]['value'] == "J" or Card_Deck[i]['value'] == "A")])
+    p2_scores.extend([1 for i in p2_pile if (Card_Deck[i]['value'] == "J" or Card_Deck[i]['value'] == "A")])
 
     # Add two points for the 2 of Clubs (Card Code 13)
-    if 13 in player1_pile:
-        player1_scores.extend([2])
+    if 13 in p1_pile:
+        p1_scores.extend([2])
     else:
-        player2_scores.extend([2])
+        p2_scores.extend([2])
 
     # Add three points for the 10 of Diamonds
-    if 34 in player1_pile:
-        player1_scores.extend([3])
+    if 34 in p1_pile:
+        p1_scores.extend([3])
     else:
-        player2_scores.extend([3])
+        p2_scores.extend([3])
 
     # Add three points for the card majority
-    if len(player1_pile) > len(player2_pile):
-        player1_scores.extend([3])
-    elif len(player2_pile) > len(player1_pile):
-        player2_scores.extend([3])
+    if len(p1_pile) > len(p2_pile):
+        p1_scores.extend([3])
+    elif len(p2_pile) > len(p1_pile):
+        p2_scores.extend([3])
 
     # Add points for the Pistis
-    player1_scores.extend([10*player1_pisti])
-    player2_scores.extend([10*player2_pisti])
+    p1_scores.extend([10*p1_pisti])
+    p2_scores.extend([10*p2_pisti])
 
     # Calculate the total scores
-    player1_score = sum(player1_scores)
-    player2_score = sum(player2_scores)
+    p1_score = sum(p1_scores)
+    p2_score = sum(p2_scores)
 
-    return player1_score, player2_score
+    return p1_score, p2_score
 
 
 def game():
-    # Set up game with initial variables
-    deck, player1_hand, player2_hand, discard_pile, player1_pile, player2_pile = setup()
-    last_capture = 0
-    # Set initial pisti count to 0
-    player1_pisti = player2_pisti = 0
+    # Sets up initial game and executes main looping through plays
+    # RETURNS: Prints player's scores at the end of the game
+    # RETURNS: (game variables to use for command line inspection if desired)
 
+    deck, p1_hand, p2_hand, discard_pile, p1_pile, p2_pile = deal_initial()
+    last_capture = 0  # Indicates which player took the last pile
+    p1_pisti = p2_pisti = 0  # Initial pisti count is set to 0
+
+    print("\nGood Luck!\n")
     for i in range(48):
         # Determine player
         player = 1 if (i % 2 == 0) else 2
-        print("Discard Pile :")
+        print("Turn: " + str(i+1) + (" (YOUR PLAY)" if player == 2 else "") + "\n==========")
+        print("Discard Pile :" + str(len(discard_pile)) + " cards high")
         try:
             top_discard_card = Card_Deck[discard_pile[-1]]['value']+" of "+Card_Deck[discard_pile[-1]]['suit']
         except IndexError:
             top_discard_card = "empty"
-        print("Top Card :"+top_discard_card)
-        print(discard_pile)
-        print("Turn: "+str(i+1))
+        print("Top Card :"+top_discard_card+"\n")
         try:
-            result, player_card, discard_pile, player1_pisti, player2_pisti, last_capture = arbitrate(player, discard_pile, player1_hand, player2_hand, player1_pile, player2_pile, player1_pisti, player2_pisti, last_capture)
-        except IndexError:  # The player's hands have run out of cards and .pop returns and IndexError
-            player1_hand, player2_hand, deck = deal(player1_hand, player2_hand, deck)
-            result, player_card, discard_pile, player1_pisti, player2_pisti, last_capture = arbitrate(player, discard_pile, player1_hand, player2_hand, player1_pile, player2_pile, player1_pisti, player2_pisti, last_capture)
-        print("Player "+str(player)+" plays "+Card_Deck[player_card]['value']+" of "+Card_Deck[player_card]['suit'])
-        print("Deck Length: "+str(len(deck)))
-        print("P1 Hand: "+str(player1_hand))
-        print("P2 Hand: "+str(player2_hand))
-        print("P1 Pistis: "+str(player1_pisti))
-        print("P2 Pistis: "+str(player2_pisti))
-        print("P1 Pile: "+str(player1_pile))
-        print("P2 Pile: "+str(player2_pile))
+            result, p_card, discard_pile, p1_pisti, p2_pisti, last_capture = play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_pisti, last_capture)
+        except IndexError:  # Player's hands have run out of cards
+            p1_hand, p2_hand, deck = deal_more(p1_hand, p2_hand, deck)
+            result, p_card, discard_pile, p1_pisti, p2_pisti, last_capture = play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_pisti, last_capture)
+        print("Player "+str(player)+" plays "+Card_Deck[p_card]['value']+" of "+Card_Deck[p_card]['suit'])
+        print("P1 Hand: "+str(len(p1_hand))+" cards left")
+        print("P2 Hand: "+str(p2_hand))
+        # print("P1 Pistis: "+str(p1_pisti))
+        # print("P2 Pistis: "+str(p2_pisti))
+        print("P1 Pile: "+str(len(p1_pile))+" cards high")
+        print("P2 Pile: "+str(len(p2_pile))+" cards high")
         print(" ")
 
     if last_capture == 1:
-        player1_pile.extend(discard_pile)
+        p1_pile.extend(discard_pile)
     else:
-        player2_pile.extend(discard_pile)
-    discard_pile = []  # Unnecessary. I can remove this later
-    player1_score, player2_score = score(player1_pile, player2_pile, player1_pisti, player2_pisti)
+        p2_pile.extend(discard_pile)
+    discard_pile = []  # Empty discard pile for completion
+    p1_score, p2_score = score(p1_pile, p2_pile, p1_pisti, p2_pisti)
 
-    print("Player 1 scored: "+str(player1_score))
-    print("Player 2 scored: "+str(player2_score))
-    return deck, player1_hand, player2_hand, discard_pile, player1_pile, player2_pile, player1_pisti, player2_pisti
+    print("Player 1 scored: "+str(p1_score))
+    print("Player 2 scored: "+str(p2_score))
+    return deck, p1_hand, p2_hand, discard_pile, p1_pile, p2_pile, p1_pisti, p2_pisti
 
 
-# This is a test functions that checks for the length
-def lengthy(deck, player1_hand, player2_hand, discard_pile, player1_pile, player2_pile, player1_pisti, player2_pisti):
-    print("Deck length: "+str(len(deck)))
-    print("P1 Hand: "+str(len(player1_hand)))
-    print("P2 Hand: "+str(len(player2_hand)))
-    print("Discard Pile: "+str(len(discard_pile)))
-    print("P1 Pile: "+str(len(player1_pile)))
-    print("P1 Pistis: "+str(player1_pisti))
-    print("P2 Pistis: "+str(player2_pisti))
-    print("P2 Pile: "+str(len(player2_pile)))
-    print("Total cards: "+str(len(deck)+len(player1_hand)+len(player2_hand)+len(discard_pile)+len(player1_pile)+len(player2_pile)))
-
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
