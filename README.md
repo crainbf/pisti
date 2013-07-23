@@ -70,25 +70,30 @@ Modifications
 --------------------
 Some minor modifications from the original game have been made for this version of Pisti.
 
-Most importantly, the computer plays a completely random strategy. It simply chooses the top card in its hand
-which will be a random card. This, of course, makes beating the computer very easy.
-
-Another alteration is that number of cards in the different piles are displayed at each turn. In a normal game
+1. The computer always begins the game. Usually, the players do turns in dealing the cards and
+starting the game.
+2. The number of cards in the different piles are displayed at each turn. In a normal game
 players do not have that information although they may count the cards or estimate the number of cards based on
 the height of the card piles.
 
+How to Play
+===================
+1. Git clone the repository. No particular packages are required.
+2. Open the python console and run `from game import *`
+3. Type `game()`, hit enter and start playing!
+
 Development Plan
 ===================
-There are two main aspects of the game that need to be developed further for the game to become interesting.
+The primary area that has to be addressed at this point are usability and computer strategy.
 
 1. Computer Intelligence
 --------------------
-Currently the computer plays the computer plays a random strategy. This makes the game very boring as it is
-almost impossible not to win. Therefore introducing some strategy into the computer's choices is a high
-priority.
+Currently, a basic version of computer intelligence has been implemented. The computer captures the pile whenever
+it can match a card. Jacks are still played randomly.
 
-Most obviously, the computer should always play the matching card when it is able to do so. This is very quick
-and easy to implement.
+A next step would be to add more intelligence. For example, the computer could strategically play cards that minimize
+the chance of an opponents capture if it can't capture the pile itself. It could also play the Jack strategically,
+although this is a fairly complex problem.
 
 2. Web Application
 --------------------
@@ -97,11 +102,16 @@ to communicate the relevant information and is visually very unpleasant. A next 
 application out of the game. This, however, is a fairly substantial project and the code of would most likely
 have to be rewritten in javascript as well.
 
+3. Minor Bugfix
+--------------------
+The game right now would crash if the initial draw of the discard pile would consist exclusively of Jacks. This
+is not a priority, however, as the chance of this happening is only 1 in 270'725.
 
 Change Log
 ===================
 (Incomplete as only started recently)
 
+* Adding Computer Intelligence
 * Change readme formatting to markdown
 * Shorten comments for (sort of) pep8 compliance
 * Rename & shorten variable names
