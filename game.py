@@ -56,8 +56,37 @@ def choose_card(p2_hand):
     return p_card, p2_hand
 
 
+def computer_play(p1_hand, discard_pile):
+    #
+    """
+    >>> # Computer matches Ace when only card in hand
+    >>> p1_hand = [12]
+    >>> discard_pile = [25]
+    >>> computer_play(p1_hand, discard_pile)
+    (12, [])
+    >>> # Computer matches King when there are four cards in hand
+    >>> p1_hand = [7, 11, 17, 21]
+    >>> discard_pile = [12, 24]
+    >>> computer_play(p1_hand, discard_pile)
+    (11, [7, 17, 21])
+    >>> # Computer plays top card when it can't match
+    >>> p1_hand = [7, 11, 17, 21]
+    >>> discard_pile = [23]
+    >>> computer_play(p1_hand, discard_pile)
+    (21, [7, 11, 17])
+    """
+    if len(discard_pile) == 0:
+        return p1_hand.pop(), p1_hand
+
+    for i in p1_hand:
+        if Card_Deck[i]['value'] == Card_Deck[discard_pile[-1]]['value']:
+            p1_hand.remove(i)
+            return i, p1_hand
+    return p1_hand.pop(), p1_hand
+
+
 def play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_pisti, last_capture):
-    # Chooses card to be played automatically (computer) or through choose_card
+    # Calls computer play or player's function to allow card choice
     # Evaluates if capture occurred. Adjusts new discard pile, player piles,
     # player hands, pisti count and last capture code.
     # RETURNS:   result (0 - empty pile, card starts new discard pile;
@@ -66,7 +95,7 @@ def play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_
     #            card played, discard pile, pisti count and last capture code
 
     if player == 1:
-        p_card = p1_hand.pop()  # Computer turn: last card played (~random play)
+        p_card, p1_hand = computer_play(p1_hand, discard_pile)  # Computer turn: last card played (~random play)
     else:
         p_card, p2_hand = choose_card(p2_hand)
 
@@ -252,10 +281,14 @@ def game():
     print("The game is over!")
     print("Player 1 scored: "+str(p1_score))
     print("Player 2 scored: "+str(p2_score))
-    print("Player " + ("1" if p1_score > p2_score else "2") + " won the game.")
+    if p1_score > p2_score:
+        print("Player 1 won the game.")
+    elif p1_score < p2_score:
+        print("Player 2 won the game.")
+    else:
+        print("You tied. Play again to settle this matter!")
     return deck, p1_hand, p2_hand, discard_pile, p1_pile, p2_pile, p1_pisti, p2_pisti
 
-game()
 
 if __name__ == "__main__":
     import doctest
