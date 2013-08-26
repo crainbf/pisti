@@ -1,5 +1,6 @@
 import random
 from deck import Card_Deck
+import time
 
 
 def deal_initial():
@@ -57,7 +58,10 @@ def choose_card(p2_hand):
 
 
 def computer_play(p1_hand, discard_pile):
-    #
+    # Chooses a card from computer's hand
+    # RETURNS:
+    #       - Card chosen
+    #       - New computer hand
     """
     >>> # Computer matches Ace when only card in hand
     >>> p1_hand = [12]
@@ -74,8 +78,20 @@ def computer_play(p1_hand, discard_pile):
     >>> discard_pile = [23]
     >>> computer_play(p1_hand, discard_pile)
     (21, [7, 11, 17])
+    >>> # Computer doesn't play Jack if the discard pile is empty and it has 2 cards
+    >>> p1_hand = [29, 35]
+    >>> discard_pile = []
+    >>> computer_play(p1_hand, discard_pile)
+    (29, [35])
     """
+
+    time.sleep(1)
     if len(discard_pile) == 0:
+        # Don't play a card with points if the discard pile is empty
+        for i in p1_hand:
+            if Card_Deck[i]['value'] not in ['J', 'A']:
+                p1_hand.remove(i)
+                return i, p1_hand
         return p1_hand.pop(), p1_hand
 
     for i in p1_hand:
@@ -169,6 +185,7 @@ def deal_more(p1_hand, p2_hand, deck):
     >>> set(p1) != set(p2)
     True
     """
+
     p1_hand = random.sample(deck, 4)
     deck = [x for x in deck if x not in p1_hand]
 
@@ -201,6 +218,7 @@ def score(p1_pile, p2_pile, p1_pisti, p2_pisti):
     >>> sum(score(p1_pile, p2_pile, p1_pisti, p2_pisti))
     13
     """
+
     p1_scores = []
     p2_scores = []
 
