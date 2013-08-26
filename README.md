@@ -111,6 +111,7 @@ Change Log
 ===================
 (Incomplete as only started recently)
 
+* Computer doesn't play Jack or Ace on empty discard pile
 * Adding Computer Intelligence
 * Change readme formatting to markdown
 * Shorten comments for (sort of) pep8 compliance
