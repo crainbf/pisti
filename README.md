@@ -5,13 +5,13 @@ Pisti (pronounced 'Pishti') is a Turkish card game using a standard 52 card pack
 Here it is played by two players, the computer and one human player.
 [Wikipedia](http://en.wikipedia.org/wiki/Bastra)
 
-Cards are dealt to a discard pile, here called discard pile. The goal of the game
+Cards are dealt to a central pile, here called discard pile. The goal of the game
 is to get as many points possible by capturing the cards in the discard pile.
 The discard pile can be captured by playing a jack or by matching the value of the previous card.
 (e.g. By putting a 9 on top of a 9)
 
 In the end, each player accumulates a stack of cards this way. Points are awarded to certain cards
-and the winner is who accumulated more points overall.
+and the winner is who accumulates more points overall.
 
 A detailed description of the game follows. 
 
@@ -26,7 +26,7 @@ upwards is a jack it is returned to the bottom of the discard pile and the next 
 Play
 --------------------
 Player 1 plays the first card. If the card matches the top card of the discard pile or is a jack,
-he captures the pile. Otherwise, it is added to the discard pile.
+he captures the pile. Otherwise, it is added to the discard pile - now five cards high.
 
 Then Player 2 plays a card. If the card matches the top card of the discard pile or is a jack, she takes the pile.
 Otherwise, it is added to the discard pile. If a player takes the pile, the other player will play the next card
