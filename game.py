@@ -87,7 +87,7 @@ def computer_play(p1_hand, discard_pile):
 
     time.sleep(1)
     if len(discard_pile) == 0:
-        # Don't play a card with points if the discard pile is empty
+        # Don't play a Jack or Ace if the discard pile is empty
         for i in p1_hand:
             if Card_Deck[i]['value'] not in ['J', 'A']:
                 p1_hand.remove(i)
@@ -105,9 +105,7 @@ def play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_
     # Calls computer play or player's function to allow card choice
     # Evaluates if capture occurred. Adjusts new discard pile, player piles,
     # player hands, pisti count and last capture code.
-    # RETURNS:   result (0 - empty pile, card starts new discard pile;
-    #                    1 - player captures pile;
-    #                    2 - player adds card to top of existing pile)
+    # RETURNS:
     #            card played, discard pile, pisti count and last capture code
 
     if player == 1:
@@ -118,14 +116,12 @@ def play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_
     try:
         top_card_value = Card_Deck[discard_pile[-1]]['value']
     except IndexError:  # If discard pile is empty, card is simply added to pile
-        result = 0
         discard_pile.extend([p_card])
-        return result, p_card, discard_pile, p1_pisti, p2_pisti, last_capture
+        return p_card, discard_pile, p1_pisti, p2_pisti, last_capture
 
     # If the discard pile is not empty, it is checked if a capture occurred.
     # The player pairs with the top card of the pile and takes pile
     if Card_Deck[p_card]['value'] == top_card_value:
-        result = 1
         discard_pile.extend([p_card])
         # Cards get added to player1's pile
         if player == 1:
@@ -151,7 +147,6 @@ def play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_
 
     # Player plays a jack and  discard pile is not empty -> pile is captured
     elif Card_Deck[p_card]['value'] == "J" and discard_pile:
-        result = 1
         discard_pile.extend([p_card])
         # Cards get added to player1's pile
         if player == 1:
@@ -165,9 +160,8 @@ def play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_
 
     # The player doesn't take the pile and the round continues
     else:
-        result = 0
         discard_pile.extend([p_card])
-    return result, p_card, discard_pile, p1_pisti, p2_pisti, last_capture
+    return p_card, discard_pile, p1_pisti, p2_pisti, last_capture
 
 
 def deal_more(p1_hand, p2_hand, deck):
@@ -276,10 +270,10 @@ def game():
             top_discard_card = "empty"
         print("Top Card :"+top_discard_card+"\n")
         try:
-            result, p_card, discard_pile, p1_pisti, p2_pisti, last_capture = play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_pisti, last_capture)
+            p_card, discard_pile, p1_pisti, p2_pisti, last_capture = play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_pisti, last_capture)
         except IndexError:  # Player's hands have run out of cards
             p1_hand, p2_hand, deck = deal_more(p1_hand, p2_hand, deck)
-            result, p_card, discard_pile, p1_pisti, p2_pisti, last_capture = play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_pisti, last_capture)
+            p_card, discard_pile, p1_pisti, p2_pisti, last_capture = play(player, discard_pile, p1_hand, p2_hand, p1_pile, p2_pile, p1_pisti, p2_pisti, last_capture)
         print("Player "+str(player)+" plays "+Card_Deck[p_card]['value']+" of "+Card_Deck[p_card]['suit'])
         print("P1 Hand: "+str(len(p1_hand))+" cards left")
         print("P2 Hand: "+str(p2_hand))
